@@ -110,7 +110,8 @@ class ArcLabelDecorator<D> extends ArcRendererDecorator<D> {
       final labelFn = element.series.labelAccessorFn;
       final datumIndex = element.index;
       final label = (labelFn != null) ? labelFn(datumIndex) : null;
-
+      final label0 =  label.split(';')[0];
+      final label1 = label.split(';')[1];
       // If there are custom styles, use that instead of the default or the
       // style defined for the entire decorator.
       final datumInsideLabelStyle = _getDatumStyle(
@@ -164,6 +165,10 @@ class ArcLabelDecorator<D> extends ArcRendererDecorator<D> {
 
       final labelElement = graphicsFactory.createTextElement(label)
         ..maxWidthStrategy = MaxWidthStrategy.ellipsize;
+      final labelElement0 = graphicsFactory.createTextElement(label0)
+    ..maxWidthStrategy = MaxWidthStrategy.ellipsize;
+      final labelElement1 = graphicsFactory.createTextElement(label1)
+    ..maxWidthStrategy = MaxWidthStrategy.ellipsize;
 
       var calculatedLabelPosition = labelPosition;
       if (calculatedLabelPosition == ArcLabelPosition.auto) {
@@ -187,7 +192,11 @@ class ArcLabelDecorator<D> extends ArcRendererDecorator<D> {
       } else {
         // calculatedLabelPosition == LabelPosition.outside
         labelElement.textStyle = datumOutsideLabelStyle;
-        labelElement.maxWidth = outsideArcWidth;
+        labelElement.maxWidth = outsideArcWidth+400;
+        labelElement0.textStyle = datumOutsideLabelStyle;
+        labelElement0.maxWidth = outsideArcWidth+400;
+        labelElement1.textStyle = datumOutsideLabelStyle;
+        labelElement1.maxWidth = outsideArcWidth+400;
       }
 
       // Only calculate and draw label if there's actually space for the label.
@@ -200,7 +209,8 @@ class ArcLabelDecorator<D> extends ArcRendererDecorator<D> {
               canvas,
               drawBounds,
               arcElements,
-              labelElement,
+              labelElement0,
+              labelElement1,
               centerAngle,
               previousOutsideLabelY,
               previousLabelLeftOfChart);
@@ -263,7 +273,8 @@ class ArcLabelDecorator<D> extends ArcRendererDecorator<D> {
       ChartCanvas canvas,
       Rectangle drawBounds,
       ArcRendererElementList<D> arcElements,
-      TextElement labelElement,
+      TextElement labelElement0,
+      TextElement labelElement1,
       double centerAngle,
       num previousOutsideLabelY,
       bool previousLabelLeftOfChart) {
@@ -284,11 +295,13 @@ class ArcLabelDecorator<D> extends ArcRendererDecorator<D> {
         : (labelPoint.x + labelPadding).round();
 
     // Shift the label up by the size of the font.
-    final labelY = (labelPoint.y - outsideLabelStyleSpec.fontSize / 2).round();
-
+    final labelY = (labelPoint.y - outsideLabelStyleSpec.fontSize -3 ).round();
+    final secondY = (labelPoint.y + 2 ).round();
     // Outside labels should flow away from the center of the chart
-    labelElement.textDirection =
-        labelLeftOfChart ? TextDirection.rtl : TextDirection.ltr;
+    labelElement0.textDirection =
+        labelLeftOfChart ? TextDirection.ltr : TextDirection.rtl;
+        labelElement1.textDirection =
+    labelLeftOfChart ? TextDirection.ltr : TextDirection.rtl;
 
     // Skip this label if it collides with the previously drawn label.
     if (_detectOutsideLabelCollision(labelY, labelLeftOfChart,
@@ -303,11 +316,12 @@ class ArcLabelDecorator<D> extends ArcRendererDecorator<D> {
       // Shift the label horizontally by the length of the leader line.
       labelX = (labelX + tailX).round();
 
-      labelElement.maxWidth = (labelElement.maxWidth - tailX).round();
+      labelElement0.maxWidth = (labelElement0.maxWidth - tailX).round();
+      labelElement1.maxWidth = (labelElement1.maxWidth - tailX).round();
     }
 
-    canvas.drawText(labelElement, labelX, labelY);
-
+    canvas.drawText(labelElement0, labelX, labelY);
+    canvas.drawText(labelElement1, labelX, secondY);
     // Return a structured list of values.
     return [labelLeftOfChart, labelY];
   }
