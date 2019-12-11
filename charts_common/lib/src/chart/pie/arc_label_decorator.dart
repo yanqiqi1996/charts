@@ -124,6 +124,9 @@ class ArcLabelDecorator<D> extends ArcRendererDecorator<D> {
         if (centerAngle - centerAngles[i - 1] < pi / 4) {
           centerAngle = centerAngles[i - 1] + pi / 4;
         }
+        if (centerAngle - centerAngles[i - 1] > pi / 3) {
+          centerAngle = centerAngles[i - 1] + pi / 4;
+        }
       }
 
       centerAngles.add(centerAngle);
